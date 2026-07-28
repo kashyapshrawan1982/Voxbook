@@ -1,0 +1,40 @@
+name: Android Build from Zip
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Unzip Project & Find Gradle
+      run: |
+        unzip voxbook--ebook-to-audio.zip -d android_project
+        # Zip ke andar gradlew file dhundhega
+        GRADLE_DIR=$(dirname $(find android_project -name "gradlew" | head -n 1))
+        echo "GRADLE_PATH=$GRADLE_DIR" >> $GITHUB_ENV
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Make gradlew executable
+      run: chmod +x ${{ env.GRADLE_PATH }}/gradlew
+
+    - name: Build Debug APK
+      run: |
+        cd ${{ env.GRADLE_PATH }}
+        ./gradlew assembleDebug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-debug-apk
+        path: ${{ env.GRADLE_PATH }}/app/build/outputs/apk/debug/*.apk
