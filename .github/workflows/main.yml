@@ -14,7 +14,7 @@ jobs:
 
     - name: Unzip Project & Find Gradle
       run: |
-        unzip voxbook--ebook-to-audio.zip -d android_project
+        unzip *.zip -d android_project
         # Zip ke andar gradlew file dhundhega
         GRADLE_DIR=$(dirname $(find android_project -name "gradlew" | head -n 1))
         echo "GRADLE_PATH=$GRADLE_DIR" >> $GITHUB_ENV
