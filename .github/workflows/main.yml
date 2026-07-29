@@ -8,7 +8,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
-    # Yeh line har background process ko headless bana degi
     env:
       _JAVA_OPTIONS: "-Djava.awt.headless=true"
 
@@ -21,6 +20,13 @@ jobs:
         unzip -o *.zip -d android_project || true
         PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
         echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
+
+    - name: Fix AI Hallucination & Remove Faulty KSP Plugin
+      run: |
+        cd ${{ env.PROJECT_PATH }}
+        # Yeh command build files se us error dene wale ksp plugin ko hata degi
+        find . -name "build.gradle*" -type f -exec sed -i '/ksp/d' {} +
+        find . -name "*.kts" -type f -exec sed -i '/ksp/d' {} + || true
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
