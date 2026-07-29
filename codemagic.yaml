@@ -7,19 +7,33 @@ workflows:
       - name: Unzip Project
         script: |
           unzip -o *.zip -d android_project || true
+          
+      - name: Auto-Fix AI Code Errors
+        script: |
+          PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
+          cd $PROJECT_DIR
+          
+          # 1. API Key missing error ko theek karega
+          find . -name "*.kt" -exec sed -i 's/GEMINI_API_KEY/"MOCK_API_KEY"/g' {} +
+          find . -name "*.kt" -exec sed -i 's/BuildConfig\.GEMINI_API_KEY/"MOCK_API_KEY"/g' {} +
+          
+          # 2. Syntax (!) bracket error ko theek karega
+          find . -name "*.kt" -exec sed -i 's/\.isEmpty/\.isEmpty()/g' {} +
+          find . -name "*.kt" -exec sed -i 's/\.isEmpty()()/\.isEmpty()/g' {} +
+          find . -name "*.kt" -exec sed -i 's/\.isSuccessful/\.isSuccessful()/g' {} +
+          find . -name "*.kt" -exec sed -i 's/\.isSuccessful()()/\.isSuccessful()/g' {} +
+
       - name: Build Debug APK
         script: |
           PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
           cd $PROJECT_DIR
           
-          # Yeh command missing keystore file create karegi (Security Key)
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug"
           
-          # Naya Gradle engine banayega aur build karega
           gradle wrapper --gradle-version 9.3.1
           chmod +x gradlew
-          
           export _JAVA_OPTIONS="-Djava.awt.headless=true"
           ./gradlew assembleDebug --no-daemon
+
     artifacts:
       - android_project/**/app/build/outputs/apk/**/*.apk
