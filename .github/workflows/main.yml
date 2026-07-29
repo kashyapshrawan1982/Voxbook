@@ -12,12 +12,14 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Unzip Project & Find Gradle
+    - name: Unzip Project & Find Root
       run: |
-        unzip *.zip -d android_project
-        # Zip ke andar gradlew file dhundhega
-        GRADLE_DIR=$(dirname $(find android_project -name "gradlew" | head -n 1))
-        echo "GRADLE_PATH=$GRADLE_DIR" >> $GITHUB_ENV
+        # Unzip karte waqt minor warnings ko ignore karne ke liye || true lagaya hai
+        unzip -o *.zip -d android_project || true
+        
+        # Project ka main folder dhundhega
+        PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
+        echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -25,16 +27,16 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Make gradlew executable
-      run: chmod +x ${{ env.GRADLE_PATH }}/gradlew
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
     - name: Build Debug APK
       run: |
-        cd ${{ env.GRADLE_PATH }}
-        ./gradlew assembleDebug
+        cd ${{ env.PROJECT_PATH }}
+        gradle assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug-apk
-        path: ${{ env.GRADLE_PATH }}/app/build/outputs/apk/debug/*.apk
+        path: ${{ env.PROJECT_PATH }}/app/build/outputs/apk/debug/*.apk
