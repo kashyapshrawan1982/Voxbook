@@ -8,36 +8,13 @@ workflows:
         script: |
           unzip -o *.zip -d android_project || true
           
-      - name: Auto-Fix AI Code Errors
+      - name: Read Problematic Code
         script: |
           PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
-          cd $PROJECT_DIR
           
-          # 1. Pehle BuildConfig wale syntax ko clean karenge taaki error na aaye
-          find . -name "*.kt" -exec sed -i.bak 's/BuildConfig\.GEMINI_API_KEY/""/g' {} +
+          echo "================ KOTLIN CODE START ================"
+          cat $PROJECT_DIR/app/src/main/java/com/example/data/translation/TranslationService.kt
+          echo "================ KOTLIN CODE END ================"
           
-          # 2. Fir bache hue API keys ko clean karenge
-          find . -name "*.kt" -exec sed -i.bak 's/GEMINI_API_KEY/""/g' {} +
-          
-          # 3. Missing brackets aur operators ko safely theek karenge
-          find . -name "*.kt" -exec sed -i.bak 's/\.isEmpty/\.isEmpty()/g' {} +
-          find . -name "*.kt" -exec sed -i.bak 's/\.isEmpty()()/\.isEmpty()/g' {} +
-          find . -name "*.kt" -exec sed -i.bak 's/\.isBlank/\.isBlank()/g' {} +
-          find . -name "*.kt" -exec sed -i.bak 's/\.isBlank()()/\.isBlank()/g' {} +
-          find . -name "*.kt" -exec sed -i.bak 's/\.isSuccessful/\.isSuccessful()/g' {} +
-          find . -name "*.kt" -exec sed -i.bak 's/\.isSuccessful()()/\.isSuccessful()/g' {} +
-
-      - name: Build Debug APK
-        script: |
-          PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
-          cd $PROJECT_DIR
-          
-          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug"
-          
-          gradle wrapper --gradle-version 9.3.1
-          chmod +x gradlew
-          export _JAVA_OPTIONS="-Djava.awt.headless=true"
-          ./gradlew assembleDebug --no-daemon
-
-    artifacts:
-      - android_project/**/app/build/outputs/apk/**/*.apk
+          # Yahan process rok denge taaki aage faaltu errors na aayen
+          exit 1
