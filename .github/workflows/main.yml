@@ -21,13 +21,6 @@ jobs:
         PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
         echo "PROJECT_PATH=$PROJECT_DIR" >> $GITHUB_ENV
 
-    - name: Fix AI Hallucination & Remove Faulty KSP Plugin
-      run: |
-        cd ${{ env.PROJECT_PATH }}
-        # Yeh command build files se us error dene wale ksp plugin ko hata degi
-        find . -name "build.gradle*" -type f -exec sed -i '/ksp/d' {} +
-        find . -name "*.kts" -type f -exec sed -i '/ksp/d' {} + || true
-
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -37,10 +30,17 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
 
+    - name: Generate Missing Keystore
+      run: |
+        cd ${{ env.PROJECT_PATH }}
+        # Yeh line missing keystore file create karegi
+        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug"
+
     - name: Build Debug APK
       run: |
         cd ${{ env.PROJECT_PATH }}
-        gradle assembleDebug --no-daemon
+        # --no-configuration-cache purane errors ko aane se rokega
+        gradle assembleDebug --no-daemon --no-configuration-cache
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
