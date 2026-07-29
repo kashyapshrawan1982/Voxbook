@@ -13,15 +13,14 @@ workflows:
           PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
           cd $PROJECT_DIR
           
-          # 1. API Key missing error ko theek karega
-          find . -name "*.kt" -exec sed -i 's/GEMINI_API_KEY/"MOCK_API_KEY"/g' {} +
-          find . -name "*.kt" -exec sed -i 's/BuildConfig\.GEMINI_API_KEY/"MOCK_API_KEY"/g' {} +
+          # Mac/Apple servers ke liye .bak add kiya gaya hai
+          find . -name "*.kt" -exec sed -i.bak 's/GEMINI_API_KEY/"MOCK_API_KEY"/g' {} +
+          find . -name "*.kt" -exec sed -i.bak 's/BuildConfig\.GEMINI_API_KEY/"MOCK_API_KEY"/g' {} +
           
-          # 2. Syntax (!) bracket error ko theek karega
-          find . -name "*.kt" -exec sed -i 's/\.isEmpty/\.isEmpty()/g' {} +
-          find . -name "*.kt" -exec sed -i 's/\.isEmpty()()/\.isEmpty()/g' {} +
-          find . -name "*.kt" -exec sed -i 's/\.isSuccessful/\.isSuccessful()/g' {} +
-          find . -name "*.kt" -exec sed -i 's/\.isSuccessful()()/\.isSuccessful()/g' {} +
+          find . -name "*.kt" -exec sed -i.bak 's/\.isEmpty/\.isEmpty()/g' {} +
+          find . -name "*.kt" -exec sed -i.bak 's/\.isEmpty()()/\.isEmpty()/g' {} +
+          find . -name "*.kt" -exec sed -i.bak 's/\.isSuccessful/\.isSuccessful()/g' {} +
+          find . -name "*.kt" -exec sed -i.bak 's/\.isSuccessful()()/\.isSuccessful()/g' {} +
 
       - name: Build Debug APK
         script: |
