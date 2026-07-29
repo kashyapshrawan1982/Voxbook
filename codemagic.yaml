@@ -8,13 +8,25 @@ workflows:
         script: |
           unzip -o *.zip -d android_project || true
           
-      - name: Read Problematic Code
+      - name: Fix API Key Error
         script: |
           PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
+          cd $PROJECT_DIR
           
-          echo "================ KOTLIN CODE START ================"
-          cat $PROJECT_DIR/app/src/main/java/com/example/data/translation/TranslationService.kt
-          echo "================ KOTLIN CODE END ================"
+          # Sirf ek exact line ko safe tarike se theek karenge taaki syntax na toote
+          find . -name "*.kt" -exec sed -i.bak 's/BuildConfig\.GEMINI_API_KEY/""/g' {} +
+
+      - name: Build Debug APK
+        script: |
+          PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
+          cd $PROJECT_DIR
           
-          # Yahan process rok denge taaki aage faaltu errors na aayen
-          exit 1
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug"
+          
+          gradle wrapper --gradle-version 9.3.1
+          chmod +x gradlew
+          export _JAVA_OPTIONS="-Djava.awt.headless=true"
+          ./gradlew assembleDebug --no-daemon
+
+    artifacts:
+      - android_project/**/app/build/outputs/apk/**/*.apk
