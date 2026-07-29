@@ -12,13 +12,14 @@ workflows:
           PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
           cd $PROJECT_DIR
           
-          # Yeh command automatically naya aur latest gradlew file bana degi
+          # Yeh command missing keystore file create karegi (Security Key)
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug"
+          
+          # Naya Gradle engine banayega aur build karega
           gradle wrapper --gradle-version 9.3.1
           chmod +x gradlew
           
           export _JAVA_OPTIONS="-Djava.awt.headless=true"
-          
-          # Ab hum latest wrapper ka use karke app banayenge
           ./gradlew assembleDebug --no-daemon
     artifacts:
       - android_project/**/app/build/outputs/apk/**/*.apk
