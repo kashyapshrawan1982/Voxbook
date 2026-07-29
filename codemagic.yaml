@@ -13,12 +13,17 @@ workflows:
           PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
           cd $PROJECT_DIR
           
-          # Mac/Apple servers ke liye .bak add kiya gaya hai
-          find . -name "*.kt" -exec sed -i.bak 's/GEMINI_API_KEY/"MOCK_API_KEY"/g' {} +
-          find . -name "*.kt" -exec sed -i.bak 's/BuildConfig\.GEMINI_API_KEY/"MOCK_API_KEY"/g' {} +
+          # 1. Pehle BuildConfig wale syntax ko clean karenge taaki error na aaye
+          find . -name "*.kt" -exec sed -i.bak 's/BuildConfig\.GEMINI_API_KEY/""/g' {} +
           
+          # 2. Fir bache hue API keys ko clean karenge
+          find . -name "*.kt" -exec sed -i.bak 's/GEMINI_API_KEY/""/g' {} +
+          
+          # 3. Missing brackets aur operators ko safely theek karenge
           find . -name "*.kt" -exec sed -i.bak 's/\.isEmpty/\.isEmpty()/g' {} +
           find . -name "*.kt" -exec sed -i.bak 's/\.isEmpty()()/\.isEmpty()/g' {} +
+          find . -name "*.kt" -exec sed -i.bak 's/\.isBlank/\.isBlank()/g' {} +
+          find . -name "*.kt" -exec sed -i.bak 's/\.isBlank()()/\.isBlank()/g' {} +
           find . -name "*.kt" -exec sed -i.bak 's/\.isSuccessful/\.isSuccessful()/g' {} +
           find . -name "*.kt" -exec sed -i.bak 's/\.isSuccessful()()/\.isSuccessful()/g' {} +
 
