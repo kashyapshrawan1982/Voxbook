@@ -9,13 +9,11 @@ workflows:
           unzip -o *.zip -d android_project || true
       - name: Build Debug APK
         script: |
-          # Project ka main folder dhundhega
           PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
           cd $PROJECT_DIR
           
-          # Permission dega aur build karega
-          chmod +x gradlew
           export _JAVA_OPTIONS="-Djava.awt.headless=true"
-          ./gradlew assembleDebug --no-daemon
+          # System Gradle ka use kar rahe hain kyunki zip me gradlew nahi hai
+          gradle assembleDebug --no-daemon
     artifacts:
       - android_project/**/app/build/outputs/apk/**/*.apk
