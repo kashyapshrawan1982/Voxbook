@@ -8,13 +8,13 @@ workflows:
         script: |
           unzip -o *.zip -d android_project || true
           
-      - name: Fix API Key Error
+      - name: Inject API Key (Fix Translate & Audio)
         script: |
           PROJECT_DIR=$(dirname $(find android_project -name "settings.gradle*" | head -n 1))
           cd $PROJECT_DIR
           
-          # Sirf ek exact line ko safe tarike se theek karenge taaki syntax na toote
-          find . -name "*.kt" -exec sed -i.bak 's/BuildConfig\.GEMINI_API_KEY/""/g' {} +
+          # Aapki secret Gemini API Key ko app mein insert kar rahe hain
+          find . -name "*.kt" -exec sed -i.bak 's/BuildConfig\.GEMINI_API_KEY/"AIzaSyAtgFSzjlH9KR_ZbiB72wV5ogYjB5R0LRQ"/g' {} +
 
       - name: Build Debug APK
         script: |
